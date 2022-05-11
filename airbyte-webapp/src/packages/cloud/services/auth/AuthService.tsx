@@ -36,11 +36,12 @@ export type AuthSendEmailVerification = () => Promise<void>;
 export type AuthVerifyEmail = (code: string) => Promise<void>;
 export type AuthLogout = () => void;
 
-type AuthContextApi = {
+interface AuthContextApi {
   user: User | null;
   inited: boolean;
   emailVerified: boolean;
   isLoading: boolean;
+  signInWithEmailLink: (email: string) => Promise<void>;
   login: AuthLogin;
   signUp: AuthSignUp;
   updatePassword: AuthUpdatePassword;
@@ -50,7 +51,7 @@ type AuthContextApi = {
   sendEmailVerification: AuthSendEmailVerification;
   verifyEmail: AuthVerifyEmail;
   logout: AuthLogout;
-};
+}
 
 export const AuthContext = React.createContext<AuthContextApi | null>(null);
 
@@ -127,6 +128,13 @@ export const AuthenticationProvider: React.FC = ({ children }) => {
       async verifyEmail(code: string): Promise<void> {
         await authService.confirmEmailVerify(code);
         emailVerified(true);
+      },
+      async signInWithEmailLink(email: string): Promise<void> {
+        const auth = await authService.signInWithEmailLink(email);
+
+        if (auth.user) {
+          await onAfterAuth(auth.user);
+        }
       },
       async confirmPasswordReset(code: string, newPassword: string): Promise<void> {
         await authService.finishResetPassword(code, newPassword);
