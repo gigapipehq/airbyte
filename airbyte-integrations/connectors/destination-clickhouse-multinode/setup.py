@@ -5,10 +5,7 @@
 
 from setuptools import find_packages, setup
 
-MAIN_REQUIREMENTS = [
-    "airbyte-cdk",
-    "clickhouse-driver"
-]
+MAIN_REQUIREMENTS = ["airbyte-cdk", "clickhouse-driver"]
 
 TEST_REQUIREMENTS = ["pytest~=6.1"]
 
