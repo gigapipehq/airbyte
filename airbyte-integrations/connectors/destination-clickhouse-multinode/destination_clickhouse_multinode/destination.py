@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
+from destination_clickhouse_multinode.client import ClickHouseClient, ClickHouseHTTPClient
 
 
 class DestinationClickhouseMultinode(Destination):
@@ -46,8 +47,8 @@ class DestinationClickhouseMultinode(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            # TODO
-
+            client = ClickHouseHTTPClient(**config)
+            client.query("show tables")
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")

@@ -17,13 +17,13 @@
         "title": "Host",
         "description": "Hostname of the database.",
         "type": "string",
+        "examples": ["https://clickhouse.mycluster.myorg.aws-region.gigapipe.com/"],
         "order": 0
       },
       "cluster": {
         "title": "Cluster",
         "description": "The name of the cluster to connect to.",
         "type": "string",
-        "examples": ["8123"],
         "order": 1
       },
       "port": {
@@ -65,9 +65,9 @@
         "airbyte_secret": true,
         "order": 6
       },
-      "ssl": {
-        "title": "SSL Connection",
-        "description": "Encrypt data using SSL.",
+      "secure": {
+        "title": "Https use",
+        "description": "Indicates if connection is https",
         "type": "boolean",
         "default": false,
         "order": 7
