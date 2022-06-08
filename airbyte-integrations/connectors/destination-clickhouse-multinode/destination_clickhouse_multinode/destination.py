@@ -8,12 +8,15 @@ from typing import Any, Iterable, Mapping
 from airbyte_cdk import AirbyteLogger
 from airbyte_cdk.destinations import Destination
 from airbyte_cdk.models import AirbyteConnectionStatus, AirbyteMessage, ConfiguredAirbyteCatalog, Status
-from destination_clickhouse_multinode.client import ClickHouseClient, ClickHouseHTTPClient
+
+from destination_clickhouse_multinode.client import ClickHouseClient
+from destination_clickhouse_multinode.queries import CREATE_DIST_TABLE_TEST, INSERT_INTO_TEST_TABLE, \
+    SELECT_COUNT_FROM_TEST_TABLE, DROP_DIST_TEST_TABLE, DROP_LOCAL_TEST_TABLE, CREATE_LOCAL_TABLE_TEST
 
 
 class DestinationClickhouseMultinode(Destination):
     def write(
-        self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
+            self, config: Mapping[str, Any], configured_catalog: ConfiguredAirbyteCatalog, input_messages: Iterable[AirbyteMessage]
     ) -> Iterable[AirbyteMessage]:
 
         """
@@ -47,8 +50,16 @@ class DestinationClickhouseMultinode(Destination):
         :return: AirbyteConnectionStatus indicating a Success or Failure
         """
         try:
-            client = ClickHouseHTTPClient(**config)
-            client.query("show tables")
+            client = ClickHouseClient(**config)
+            client.execute(CREATE_LOCAL_TABLE_TEST.format(client.cluster))
+            client.execute(CREATE_DIST_TABLE_TEST.format(client.cluster, client.cluster))
+            client.execute(INSERT_INTO_TEST_TABLE)
+            count = client.execute(SELECT_COUNT_FROM_TEST_TABLE)[0][0]
+            client.execute(DROP_DIST_TEST_TABLE.format(client.cluster))
+            client.execute(DROP_LOCAL_TEST_TABLE.format(client.cluster))
+            if count <= 0:
+                return AirbyteConnectionStatus(status=Status.FAILED, message=f"Failed to insert data.")
+            client.disconnect()
             return AirbyteConnectionStatus(status=Status.SUCCEEDED)
         except Exception as e:
             return AirbyteConnectionStatus(status=Status.FAILED, message=f"An exception occurred: {repr(e)}")
